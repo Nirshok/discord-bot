@@ -12,11 +12,8 @@ struct Bot;
 impl EventHandler for Bot {
     async fn message(&self, ctx: Context, msg: Message) {
         if msg.content.contains("https://twitter.com") {
-            
             let user = msg.author.name.as_str();
-
-            let message = msg.content.replace("https://twitter.com", "https://vxtwitter.com");
-            
+            let message = msg.content.replace("https://twitter.com", "https://vxtwitter.com");  
             let bot_response = format!("From: **{}**\n\n{}", user, message);
 
             if let Err(e) = msg.channel_id.say(&ctx.http, bot_response).await {
