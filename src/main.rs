@@ -1,35 +1,15 @@
+use std::sync::Arc;
+
 use anyhow::anyhow;
-use serenity::async_trait;
-use serenity::model::channel::Message;
-use serenity::model::gateway::Ready;
-use serenity::prelude::*;
+use serenity::{
+    prelude::*,
+    framework::StandardFramework,
+    model::prelude::ChannelId
+};
 use shuttle_secrets::SecretStore;
-use tracing::{error, info};
+use discobot::{Bot, REDDIT_GROUP, SubredditsStore, ShardManagerContainer};
+// use roux::Subreddit;
 
-struct Bot;
-
-#[async_trait]
-impl EventHandler for Bot {
-    async fn message(&self, ctx: Context, msg: Message) {
-        if msg.content.contains("https://twitter.com") {
-            let user = msg.author.name.as_str();
-            let message = msg.content.replace("https://twitter.com", "https://vxtwitter.com");  
-            let bot_response = format!("From: **{}**\n\n{}", user, message);
-
-            if let Err(e) = msg.channel_id.say(&ctx.http, bot_response).await {
-                error!("Error sending message: {:?}", e);
-            }
-
-            if let Err(e) = msg.delete(ctx.http).await {
-                error!("Error deleting original message: {:?}", e);
-            }
-        }
-    }
-
-    async fn ready(&self, _: Context, ready: Ready) {
-        info!("{} is connected!", ready.user.name);
-    }
-}
 
 #[shuttle_runtime::main]
 async fn serenity(
@@ -41,14 +21,38 @@ async fn serenity(
     } else {
         return Err(anyhow!("'DISCORD_TOKEN' was not found").into());
     };
+    // Get the channel id set in `Secrets.toml`
+    let channel = if let Some(channel_id) = secret_store.get("CHANNEL_ID") {
+        channel_id
+    } else {
+        return Err(anyhow!(" 'CHANNEL_ID' was not found").into());
+    };
 
+    let channel_id = if let Ok(channel_id) = channel.parse::<u64>() {
+        channel_id
+    } else {
+        return Err(anyhow!(" 'CHANNEL_ID' should be valiable number").into());
+    };
+    // Commands configuration
+    let framework = StandardFramework::new()
+        .configure(|c| c
+            .allowed_channels(vec![ChannelId(channel_id)].into_iter().collect())
+            .prefix("!"))
+        .group(&REDDIT_GROUP);
     // Set gateway intents, which decides what events the bot will be notified about
     let intents = GatewayIntents::GUILD_MESSAGES | GatewayIntents::MESSAGE_CONTENT;
 
     let client = Client::builder(&token, intents)
         .event_handler(Bot)
+        .framework(framework)
+        .type_map_insert::<SubredditsStore>(Vec::new())
         .await
         .expect("Err creating client");
+
+    {
+        let mut data = client.data.write().await;
+        data.insert::<ShardManagerContainer>(Arc::clone(&client.shard_manager));
+    }        
 
     Ok(client.into())
 }
