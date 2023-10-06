@@ -39,8 +39,8 @@ pub async fn watch(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
         return Ok(());
     };
 
-    if subreddit_name.chars().any(|x|!x.is_alphanumeric() || x != '_') {
-        msg.reply(&ctx.http, "Only letters and numbers are allowed for subreddit name.").await?;
+    if subreddit_name.chars().any(|x|!x.is_alphanumeric() && x != '_') {
+        msg.reply(&ctx.http, "Only letters, numbers and underscores are allowed for subreddit name.").await?;
         return Ok(());
     };
 
@@ -62,8 +62,8 @@ pub async fn watch(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 pub async fn remove(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     let subreddit_name = args.parse::<String>().unwrap();
 
-    if subreddit_name.chars().any(|x| !x.is_alphanumeric() || x != '_') {
-        msg.reply(&ctx.http, "Only letters numbers and underscores are allowed for subreddit name.").await?;
+    if subreddit_name.chars().any(|x| !x.is_alphanumeric() && x != '_') {
+        msg.reply(&ctx.http, "Only letters, numbers and underscores are allowed for subreddit name.").await?;
         return Ok(());
     };
 
