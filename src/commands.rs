@@ -65,7 +65,7 @@ pub async fn remove(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
         return Ok(());
     } else {
         subreddits.retain(|subreddit| subreddit != &subreddit_name);
-        msg.channel_id.say(&ctx.http, format!("Remove \"{}\" from watchlist.", subreddit_name)).await?;
+        msg.channel_id.say(&ctx.http, format!("Removed \"{}\" from watchlist.", subreddit_name)).await?;
         return Ok(());
     }
 
