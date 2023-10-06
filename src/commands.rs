@@ -29,7 +29,17 @@ pub struct Reddit;
 pub async fn watch(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     let subreddit_name = args.parse::<String>().expect("Should always be a string");
 
-    if subreddit_name.chars().any(|x| !x.is_alphanumeric()) {
+    if subreddit_name.len() > 21 {
+        msg.reply(&ctx.http, "Name cannot be longer than 21 characters!").await?;
+        return Ok(());
+    }
+
+    if subreddit_name.chars().next() == Some('_') {
+        msg.reply(&ctx.http, "Name cannot begin with an underscore!").await?;
+        return Ok(());
+    };
+
+    if subreddit_name.chars().any(|x|!x.is_alphanumeric() || x != '_') {
         msg.reply(&ctx.http, "Only letters and numbers are allowed for subreddit name.").await?;
         return Ok(());
     };
@@ -52,8 +62,8 @@ pub async fn watch(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 pub async fn remove(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     let subreddit_name = args.parse::<String>().unwrap();
 
-    if subreddit_name.chars().any(|x| !x.is_alphanumeric()) {
-        msg.channel_id.say(&ctx.http, "Only letters and numbers are allowed for subreddit name.").await?;
+    if subreddit_name.chars().any(|x| !x.is_alphanumeric() || x != '_') {
+        msg.reply(&ctx.http, "Only letters numbers and underscores are allowed for subreddit name.").await?;
         return Ok(());
     };
 
