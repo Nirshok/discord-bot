@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use anyhow::anyhow;
+use anyhow::Context;
 use serenity::{
     prelude::*,
     framework::StandardFramework,
@@ -16,23 +16,18 @@ async fn serenity(
     #[shuttle_secrets::Secrets] secret_store: SecretStore,
 ) -> shuttle_serenity::ShuttleSerenity {
     // Get the discord token set in `Secrets.toml`
-    let token = if let Some(token) = secret_store.get("DISCORD_TOKEN") {
-        token
-    } else {
-        return Err(anyhow!("'DISCORD_TOKEN' was not found").into());
-    };
-    // Get the channel id set in `Secrets.toml`
-    let channel = if let Some(channel_id) = secret_store.get("CHANNEL_ID") {
-        channel_id
-    } else {
-        return Err(anyhow!(" 'CHANNEL_ID' was not found").into());
-    };
+    let token = secret_store
+        .get("DISCORD_TOKEN")
+        .context("'DISCORD_TOKEN' was not found")?;
 
-    let channel_id = if let Ok(channel_id) = channel.parse::<u64>() {
-        channel_id
-    } else {
-        return Err(anyhow!(" 'CHANNEL_ID' should be valiable number").into());
-    };
+    // Get the channel id set in `Secrets.toml`
+    let channel = secret_store
+        .get("CHANNEL_ID")
+        .context("'CHANNEL_ID' was not found")?;
+
+    let channel_id = channel
+        .parse::<u64>()
+        .context("'CHANNEL_ID' should be valiable number")?;
     // Commands configuration
     let framework = StandardFramework::new()
         .configure(|c| c
