@@ -60,12 +60,12 @@ pub async fn remove(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     let mut data = ctx.data.write().await;
     let subreddits = data.get_mut::<SubredditsStore>().expect("Expected Subreddits in TypeMap.");
 
-    if subreddits.contains(&subreddit_name) {
+    if !subreddits.contains(&subreddit_name) {
         msg.channel_id.say(&ctx.http, "This subreddit is not in the watchlist!").await?;
         return Ok(());
     } else {
         subreddits.retain(|subreddit| subreddit != &subreddit_name);
-        msg.channel_id.say(&ctx.http, format!("Remove \"{}\" to watchlist.", subreddit_name)).await?;
+        msg.channel_id.say(&ctx.http, format!("Remove \"{}\" from watchlist.", subreddit_name)).await?;
         return Ok(());
     }
 
