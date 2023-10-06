@@ -10,7 +10,6 @@ pub struct Bot;
 impl EventHandler for Bot {
     async fn message(&self, ctx: Context, msg: Message) {
         if msg.content.contains("https://twitter.com") {
-            if !msg.content.contains("novx") {
                 let user = msg.author.name.as_str();
                 let message = msg.content.replace("https://twitter.com", "https://vxtwitter.com");  
                 let bot_response = format!("From: **{}**\n\n{}", user, message);
@@ -22,7 +21,6 @@ impl EventHandler for Bot {
                 if let Err(e) = msg.delete(ctx.http).await {
                     error!("Error deleting original message: {:?}", e);
                 }
-            }
         }
     }
 
