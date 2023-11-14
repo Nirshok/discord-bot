@@ -14,8 +14,8 @@ impl EventHandler for Bot {
                 let message = msg.content.replace("https://twitter.com", "https://vxtwitter.com");  
                 let bot_response = format!("From: **{}**\n\n{}", user, message);
 
-                if msg.referenced_message.is_some() {
-                    if let Err(e) = msg.reply(&ctx, &bot_response).await {
+                if let Some(quoted) = msg.referenced_message.clone() {
+                    if let Err(e) = quoted.reply(&ctx, &bot_response).await {
                         error!("Error replying to a message: {:?}", e);
                     }
                 } else {
@@ -23,8 +23,7 @@ impl EventHandler for Bot {
                         error!("Error sending message: {:?}", e);
                     }
                 }
-                
-                    
+                         
                 if let Err(e) = msg.delete(ctx.http).await {
                     error!("Error deleting original message: {:?}", e);
                 }
