@@ -18,12 +18,13 @@ impl EventHandler for Bot {
                     if let Err(e) = msg.reply(&ctx, &bot_response).await {
                         error!("Error replying to a message: {:?}", e);
                     }
+                } else {
+                    if let Err(e) = msg.channel_id.say(&ctx.http, bot_response).await {
+                        error!("Error sending message: {:?}", e);
+                    }
                 }
-
-                if let Err(e) = msg.channel_id.say(&ctx.http, bot_response).await {
-                    error!("Error sending message: {:?}", e);
-                }
-    
+                
+                    
                 if let Err(e) = msg.delete(ctx.http).await {
                     error!("Error deleting original message: {:?}", e);
                 }
