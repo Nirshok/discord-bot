@@ -22,8 +22,9 @@ impl TypeMapKey for SubredditsStore {
 #[group]
 #[commands(watch, remove)]
 pub struct Reddit;
-
-
+// TODO: Add a "list" command for getting all watched subreddits?
+// TODO: Namechecking extraction for readability/something else
+// TODO: Write tests
 #[command]
 #[description = "Add subreddit to watchlist"]
 pub async fn watch(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
@@ -58,11 +59,21 @@ pub async fn watch(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 }
 
 #[command]
-#[description = "Remove subreddit to watchlist"]
+#[description = "Remove subreddit from watchlist"]
 pub async fn remove(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     let subreddit_name = args.parse::<String>().unwrap();
 
-    if subreddit_name.chars().any(|x| !x.is_alphanumeric() && x != '_') {
+    if subreddit_name.len() > 21 {
+        msg.reply(&ctx.http, "Name cannot be longer than 21 characters!").await?;
+        return Ok(());
+    }
+
+    if subreddit_name.chars().next() == Some('_') {
+        msg.reply(&ctx.http, "Name cannot begin with an underscore!").await?;
+        return Ok(());
+    };
+
+    if subreddit_name.chars().any(|x|!x.is_alphanumeric() && x != '_') {
         msg.reply(&ctx.http, "Only letters, numbers and underscores are allowed for subreddit name.").await?;
         return Ok(());
     };
