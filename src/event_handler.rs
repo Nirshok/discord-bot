@@ -13,7 +13,13 @@ impl EventHandler for Bot {
                 let user = msg.author.name.as_str();
                 let message = msg.content.replace("https://twitter.com", "https://vxtwitter.com");  
                 let bot_response = format!("From: **{}**\n\n{}", user, message);
-    
+
+                if msg.referenced_message.is_some() {
+                    if let Err(e) = msg.reply(&ctx, &bot_response).await {
+                        error!("Error replying to a message: {:?}", e);
+                    }
+                }
+
                 if let Err(e) = msg.channel_id.say(&ctx.http, bot_response).await {
                     error!("Error sending message: {:?}", e);
                 }
